@@ -99,5 +99,52 @@ $ go run main.go
 # Certificate loaded once the certificate and key can both be read correctly and they match
 ```
 
+Certman also implements `GetClientCertificate` for client mTLS certificates:
+```go
+package main
+
+import (
+	"crypto/tls"
+	"io"
+	"log"
+	"net/http"
+	"os"
+
+	"github.com/dyson/certman"
+)
+
+func main() {
+	logger := log.New(os.Stdout, "", log.LstdFlags)
+
+	cm, err := certman.New("client.crt", "client.key")
+	if err != nil {
+		logger.Println(err)
+	}
+	cm.Logger(logger)
+	if err := cm.Watch(); err != nil {
+		logger.Println(err)
+	}
+
+	c := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				GetClientCertificate: cm.GetClientCertificate,
+			},
+		},
+	}
+	res, err := c.Get("https://example.net")
+	if err != nil {
+		logger.Println(err)
+	}
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		logger.Println(err)
+	}
+
+	logger.Printf("Got Response: %s", body)
+}
+```
+
 ## License
 See LICENSE file.
+
