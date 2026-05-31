@@ -147,6 +147,13 @@ func (cm *CertMan) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate,
 	return cm.keyPair, nil
 }
 
+// GetClientCertificate returns the loaded certificate for use
+// by the TLSConfig fields GetClientCerfificate field in a
+// http.Server.
+func (cm *CertMan) GetClientCertificate(_ *tls.CertificateRequestInfo) (*tls.Certificate, error) {
+	return cm.GetCertificate(nil)
+}
+
 // Stop tells certMan to stop watching for changes to the
 // certificate and key files.
 func (cm *CertMan) Stop() {

@@ -255,6 +255,34 @@ func TestGetCertificate(t *testing.T) {
 
 }
 
+func TestGetClientCertificate(t *testing.T) {
+	cm, err := certman.New("./testdata/server1.crt", "./testdata/server1.key")
+	if err != nil {
+		t.Fatalf("could not create certman: %v", err)
+	}
+
+	if err := cm.Watch(); err != nil {
+		t.Fatalf("could not watch files: %v", err)
+	}
+
+	hello := &tls.CertificateRequestInfo{}
+
+	cmCert, err := cm.GetClientCertificate(hello)
+	if err != nil {
+		t.Fatalf("could not get certman certificate")
+	}
+
+	expectedCert, _ := tls.LoadX509KeyPair("./testdata/server1.crt", "./testdata/server1.key")
+	if err != nil {
+		t.Fatalf("could not load certificate and key files to test: %v", err)
+	}
+
+	if !reflect.DeepEqual(cmCert.Certificate, expectedCert.Certificate) {
+		t.Fatalf("certman certificate doesn't match expected certificate")
+	}
+
+}
+
 func copyPair(crt, key string) {
 	// ignore error handling
 	crtSource, _ := os.Open(crt)
